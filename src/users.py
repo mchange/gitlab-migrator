@@ -30,6 +30,7 @@ class Users(object):
 		new_users = []
 		# print('Old users size:', len(users))
 		for user in users:
+			# print('user: ', user)
 			uname = user['username']
 			if uname == 'ghost':
 				continue
@@ -55,8 +56,10 @@ class Users(object):
 					'admin': user.get('is_admin'),
 					'skip_confirmation': True
 				}
+
 				resp = requests.post(self.api % self.target['address'], 
 					headers = self.target['headers'], data = data)
+
 				new_users.append(resp.json())
 
 		size = len(new_users)

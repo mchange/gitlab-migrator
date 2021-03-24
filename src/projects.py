@@ -2,6 +2,10 @@
 
 import requests
 
+'''
+分页： 	page		页码（默认：）1。
+		per_page	每页要列出的项目数（默认值：20，最大值：100）。
+'''
 class Projects(object):
 	def __init__(self, cfg, target_users, target_groups):
 		super(Projects, self).__init__()
@@ -27,19 +31,37 @@ class Projects(object):
 		return { 'source': source, 'target': target }
 
 	def get(self):
-		projects = requests.get(
-			self.api % self.source['address'], 
-			headers = self.source['headers'],
-			params = { 'order_by': 'updated_at', 'per_page': self.per_page }).json()
-		
+		# 分页处理
+		hasNext = True
+		currentPage = 1
+		projects = []
+		while hasNext is True :
+			project = requests.get(
+				self.api % self.source['address'], 
+				headers = self.source['headers'],
+				params = { 'order_by': 'updated_at', 'per_page': self.per_page, 'page':currentPage }).json()
+			
+			currentPage = currentPage + 1
+
+			# print('project: ', project)
+			
+			if len(project) < 1 :
+				hasNext = False
+			else:
+				projects = projects + project
+
+
 		print('Total projects:', len(projects))
 
 		return projects
 
 	def inserts(self, projects):
 		new_projects = []
+		# print("projects: ", projects)
+		print("target_groups: ", self.target_groups)
 		for project in projects:
-			npn = project['namespace']['name']
+			npn = project['namespace']['path']
+			print('namespace: ', project['namespace'])
 			try:
 				np = next(x for x in self.target_groups if x['path'] == npn)
 
@@ -57,6 +79,8 @@ class Projects(object):
 					data = data)
 				new_projects.append(resp.json())
 			except Exception as e:
+				print(e)
+				npn = project['namespace']['name']
 				np = next(x for x in self.target_users if x['username'] == npn)
 
 				data = {
@@ -72,6 +96,7 @@ class Projects(object):
 					headers = self.target['headers'], 
 					data = data)
 				new_projects.append(resp.json())
+	
 
 		print('Create new project: %d' % len(new_projects))
 

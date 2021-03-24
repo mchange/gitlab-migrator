@@ -2,6 +2,8 @@
 
 from git import Repo
 import os, shutil
+import time
+
 
 class Repositories(object):
 	def __init__(self, cfg, source_projects):
@@ -21,6 +23,7 @@ class Repositories(object):
 			self.push(project['path_with_namespace'], 
 				'%s/%s' % (groupdir, project['path']))
 
+
 	def push(self, uri, to_path):
 		source_url = self.api % ('%s' % self.source['address'], uri)
 		target_url = self.api % (self.target['address'], uri)
@@ -31,10 +34,13 @@ class Repositories(object):
 		gitlab = repo.create_remote('gitlab', target_url)
 		gitlab.push(all = True)
 		gitlab.push(tags = True)
+		self.clean()
 
 	def clean(self):
+		# print("clean...")
 		if os.path.exists(self.dirpath):
 			shutil.rmtree(self.dirpath, onerror = self.onerror)
+			time.sleep(3)
 
 	def onerror(self, func, path, exec_info):
 		import stat

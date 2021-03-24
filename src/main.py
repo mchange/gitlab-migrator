@@ -6,22 +6,27 @@ from groups import Groups
 from groups_members import GroupsMembers
 from projects import Projects
 from repositories import Repositories
+import time
 
 # from clean import Clean
 
 def execute(cfg):
 	users = Users(cfg).run()
 	base.storage('users', users)
+	time.sleep(5)
 
 	groups = Groups(cfg).run()
 	base.storage('groups', groups)
+	time.sleep(5)
 
 	members = GroupsMembers(cfg, users, groups).run()
 	base.storage('groups-members', members)
+	time.sleep(10)
 
 	projects = Projects(cfg, users['target'], groups['target']).run()
 	base.storage('projects', projects)
 
+	time.sleep(10)
 	Repositories(cfg, projects['source']).run()
 
 if __name__ == '__main__':
